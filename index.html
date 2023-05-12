@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat cùng code dạo</title>
+    <style>
+        .up {
+            color: green;
+        }
+
+        .down {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>AppChat Bàn luận mua Bitcoin!!!</h1>
+
+    <ul id='messages'></ul>
+
+
+    <form id="chat-form">
+        <input type="text" id="chat-mes">
+        <button id="send-chat">Gửi</button>
+    </form>
+    <span id='bit-price'></span>
+</body>
+<script src='/socket.io/socket.io.js'> // gọi thư viện </script>
+
+<script>
+    const socket = io(); // Khởi tạo một socket tới server
+    const name = prompt("Tên bạn là gì: ");
+    const chatForm = document.querySelector("#chat-form"); // Khi người dùng gửi tin nhắn, nó sẽ submit cái form này
+    const chatMes = document.querySelector('#chat-mes'); // khi mà cái form được submit, nó sẽ được gửi lên server
+
+    chatForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const message = chatMes.value; // value là nội dung khung chat
+        socket.emit('on-chat', {
+            name, message
+
+        });
+
+        chatMes.value = '';
+    });
+
+    const messages = document.querySelector('#messages');
+
+    socket.on('user-chat', (message) => {
+        const chatItem = document.createElement('li');
+        chatItem.textContent = `${message.name}: ${message.message}`;
+        messages.appendChild(chatItem);
+    })
+
+    const priceSpan = document.querySelector('#bit-price');
+
+    let lastPrice = 0;
+    socket.on('bitcoin-price', (data) => {
+
+        const { price } = data;
+
+        if (price > lastPrice) {
+            priceSpan.className = 'up';
+
+        } else {
+            priceSpan.className = 'down';
+        }
+        lastPrice = price;
+        priceSpan.textContent = `${price} USD`;
+    })
+
+</script>
+
+</html>
